@@ -1,6 +1,7 @@
 import turtle as t
 import functools
 import random
+import math
 
 LARGURA_JANELA = 1024
 ALTURA_JANELA = 600
@@ -104,12 +105,12 @@ def criar_bola():
     e um elemento inicialmente a None que corresponde à posição anterior da mesma.
     '''
     bola = t.Turtle()
-    bola.hideturtle()
     bola.up()
     bola.goto(BOLA_START_POS[0], BOLA_START_POS[1])
-    bola.down()
-    bola.dot(RAIO_BOLA*2, "black")
-    return {'objecto': bola, 'xx': random.random(), 'yy': random.random(), 'pos': None}
+    bola.shape("circle")
+    bola.shapesize(stretch_wid=RAIO_BOLA/10, stretch_len=RAIO_BOLA/10)
+    angulo = random.randint(0, 359) * math.pi/180
+    return {'objecto': bola, 'xx': math.cos(angulo)/1.5, 'yy': math.sin(angulo)/1.5, 'pos': [None, None]}
     
 
 def cria_jogador(x_pos_inicial, y_pos_inicial, cor):
@@ -215,8 +216,10 @@ def movimenta_bola(estado_jogo):
     Função responsável pelo movimento da bola que deverá ser feito tendo em conta a
     posição atual da bola e a direção em xx e yy.
     '''
-    pass
-
+    pos_anterior = estado_jogo['bola']['objecto'].pos()
+    estado_jogo['bola']['pos'] = pos_anterior
+    estado_jogo['bola']['objecto'].goto(pos_anterior[0] + estado_jogo['bola']['xx'],pos_anterior[1] + estado_jogo['bola']['yy'])
+    
 
 def verifica_colisoes_ambiente(estado_jogo):
     '''
@@ -224,7 +227,11 @@ def verifica_colisoes_ambiente(estado_jogo):
     atualizando a direção da bola. Não se esqueça de considerar que nas laterais, 
     fora da zona das balizas, a bola deverá inverter a direção onde atingiu o limite.
     '''
-    pass
+    if estado_jogo['bola']['objecto'].pos()[1] + RAIO_BOLA >= ALTURA_JANELA/2 or estado_jogo['bola']['objecto'].pos()[1] - RAIO_BOLA <= - ALTURA_JANELA/2:
+        estado_jogo['bola']['yy'] = -estado_jogo['bola']['yy']
+    
+    elif estado_jogo['bola']['objecto'].pos()[0] + RAIO_BOLA >= LARGURA_JANELA/2 or estado_jogo['bola']['objecto'].pos()[0] - RAIO_BOLA <= -LARGURA_JANELA/2:
+        estado_jogo['bola']['xx'] = -estado_jogo['bola']['xx']
 
 
 def verifica_golo_jogador_vermelho(estado_jogo):
