@@ -8,14 +8,29 @@ def le_replay(nome_ficheiro):
     jogador_vermelho - lista contendo tuplos com as coordenadas xx e yy da do jogador\_vermelho
     jogador_azul - lista contendo tuplos com as coordenadas xx e yy da do jogador\_azul
     '''
-    pass
+    replay = {
+        "bola": None,
+        "jogador_vermelho": None,
+        "jogador_azul": None 
+    }
+    
+    with open(nome_ficheiro, "r") as file:
+        for key in replay.keys():
+            line = file.readline()
+            pares = line.split(";")[:-1]
+            lista_de_pares = list()
+            for par in pares:
+                aux = par.split(",")
+                lista_de_pares.append([float(aux[0]), float(aux[1])])
+            replay[key] = lista_de_pares
+    return replay
         
 
 
 def main():
     estado_jogo = foosball_alunos.init_state()
     foosball_alunos.setup(estado_jogo, False)
-    replay = le_replay('replay_jogo_n_17.txt')
+    replay = le_replay('replay_golo_jv_1_ja_2.txt')
     for i in range(len(replay['bola'])):
         estado_jogo['janela'].update()
         estado_jogo['jogador_vermelho'].setpos(replay['jogador_vermelho'][i])

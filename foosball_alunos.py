@@ -108,7 +108,7 @@ def criar_bola():
     bola.up()
     bola.goto(BOLA_START_POS[0], BOLA_START_POS[1])
     bola.shape("circle")
-    bola.shapesize(stretch_wid=RAIO_BOLA/10, stretch_len=RAIO_BOLA/10)
+    bola.shapesize(stretch_wid=RAIO_BOLA/15, stretch_len=RAIO_BOLA/15)
     angulo = random.randint(0, 359) * math.pi/180
     return {'objecto': bola, 'xx': math.cos(angulo)/1.5, 'yy': math.sin(angulo)/1.5, 'pos': [None, None]}
     
@@ -124,7 +124,6 @@ def cria_jogador(x_pos_inicial, y_pos_inicial, cor):
     jogador.color(cor)
     jogador.up()
     jogador.goto(x_pos_inicial, y_pos_inicial)
-    jogador.down()
     jogador.shape("circle")
     jogador.shapesize(stretch_wid=DEFAULT_TURTLE_SCALE, stretch_len=DEFAULT_TURTLE_SCALE)
     return jogador
@@ -175,6 +174,21 @@ def terminar_jogo(estado_jogo):
      ele deverá ser criado com o seguinte cabeçalho: 
      NJogo,JogadorVermelho,JogadorAzul.
     '''
+    numero_jogo = 1
+
+    with open('historico_resultados.csv', 'a') as file_1:
+        if file_1.tell() == 0:
+            file_1.write("{},{},{}\n".format("NJogo", "JogadorVermelho", "JogadorAzul"))
+
+        else:
+            with open('historico_resultados.csv', 'r') as file:
+                linhas = file.readlines()
+                ultimo_jogo = linhas[-1].split(",")[:-1]
+                numero_jogo = int(ultimo_jogo[0]) + 1
+
+        file_1.write("{},{},{}\n".format(numero_jogo, estado_jogo['pontuacao_jogador_vermelho'], estado_jogo['pontuacao_jogador_azul']))
+
+
     print("Adeus")
     estado_jogo['janela'].bye()
 
@@ -209,7 +223,7 @@ def setup(estado_jogo, jogar):
 def update_board(estado_jogo):
     estado_jogo['quadro'].clear()
     estado_jogo['quadro'].write("Player A: {}\t\tPlayer B: {} ".format(estado_jogo['pontuacao_jogador_vermelho'], estado_jogo['pontuacao_jogador_azul']),align="center",font=('Monaco',24,"normal"))
-
+    
 
 def movimenta_bola(estado_jogo):
     '''
@@ -234,6 +248,15 @@ def verifica_colisoes_ambiente(estado_jogo):
         estado_jogo['bola']['xx'] = -estado_jogo['bola']['xx']
 
 
+def reposiciona_jogo(estado_jogo):
+    estado_jogo['jogador_vermelho'].goto(-((ALTURA_JANELA / 2) + LADO_MENOR_AREA), 0)
+    estado_jogo['jogador_azul'].goto((ALTURA_JANELA / 2) + LADO_MENOR_AREA, 0)
+
+    estado_jogo['bola']['objecto'].goto(BOLA_START_POS[0], BOLA_START_POS[1])
+    angulo = random.randint(0, 359) * math.pi / 180
+    estado_jogo['bola']['xx'] = math.cos(angulo) / 1.5
+    estado_jogo['bola']['yy'] = math.sin(angulo) / 1.5
+       
 def verifica_golo_jogador_vermelho(estado_jogo):
     '''
     Função responsável por verificar se um determinado jogador marcou golo. 
@@ -247,7 +270,7 @@ def verifica_golo_jogador_vermelho(estado_jogo):
     para repetir a jogada, usando as informações disponíveis no objeto 
     estado_jogo['var']. O ficheiro deverá ter o nome 
     
-    replay_golo_jv_[TotalGolosJogadorVermelho]_ja_[TotalGolosJogadorAzul].txt 
+    replay_golo_jv_[TotalGolosJogadorVermelho]ja[TotalGolosJogadorAzul].txt 
     
     onde [TotalGolosJogadorVermelho], [TotalGolosJogadorAzul] 
     deverão ser substituídos pelo número de golos marcados pelo jogador vermelho 
@@ -260,7 +283,19 @@ def verifica_golo_jogador_vermelho(estado_jogo):
     Em cada linha, os valores de xx e yy das coordenadas são separados por uma 
     ',', e cada coordenada é separada por um ';'.
     '''
-    pass
+    if estado_jogo['bola']['objecto'].pos()[0] + RAIO_BOLA >= LARGURA_JANELA/2 and estado_jogo['bola']['objecto'].pos()[1] <= ALTURA_JANELA/2 - LADO_MAIOR_AREA and estado_jogo['bola']['objecto'].pos()[1] >=  -ALTURA_JANELA/2 + LADO_MAIOR_AREA:  
+        estado_jogo['pontuacao_jogador_vermelho'] += 1
+        update_board(estado_jogo)
+        estado_jogo['janela'].update()
+        
+        nome_ficheiro_var = "replay_golo_jv_{}_ja_{}.txt".format(estado_jogo['pontuacao_jogador_vermelho'], estado_jogo['pontuacao_jogador_azul'])
+        with open(nome_ficheiro_var, 'w') as file:
+            for key in estado_jogo['var'].keys():
+                for i in range(len(estado_jogo['var'][key])): 
+                    file.write("{},{};".format(estado_jogo['var'][key][i][0], estado_jogo['var'][key][i][1]))
+                file.write("\n")
+            
+        reposiciona_jogo(estado_jogo)
 
 def verifica_golo_jogador_azul(estado_jogo):
     '''
@@ -275,7 +310,7 @@ def verifica_golo_jogador_azul(estado_jogo):
     para repetir a jogada, usando as informações disponíveis no objeto 
     estado_jogo['var']. O ficheiro deverá ter o nome 
     
-    replay_golo_jv_[TotalGolosJogadorVermelho]_ja_[TotalGolosJogadorAzul].txt 
+    replay_golo_jv_[TotalGolosJogadorVermelho]ja[TotalGolosJogadorAzul].txt 
     
     onde [TotalGolosJogadorVermelho], [TotalGolosJogadorAzul] 
     deverão ser substituídos pelo número de golos marcados pelo jogador vermelho 
@@ -288,8 +323,20 @@ def verifica_golo_jogador_azul(estado_jogo):
     Em cada linha, os valores de xx e yy das coordenadas são separados por uma 
     ',', e cada coordenada é separada por um ';'.
     '''
-    pass
-
+    if estado_jogo['bola']['objecto'].pos()[0] - RAIO_BOLA  <= -LARGURA_JANELA/2  and estado_jogo['bola']['objecto'].pos()[1]  <= ALTURA_JANELA/2 - LADO_MAIOR_AREA and estado_jogo['bola']['objecto'].pos()[1]  >=  -ALTURA_JANELA/2 + LADO_MAIOR_AREA:  
+        estado_jogo['pontuacao_jogador_azul'] += 1
+        update_board(estado_jogo)
+        estado_jogo['janela'].update()
+        
+        nome_ficheiro_var = "replay_golo_jv_{}_ja_{}.txt".format(estado_jogo['pontuacao_jogador_vermelho'], estado_jogo['pontuacao_jogador_azul'])
+        with open(nome_ficheiro_var, 'w') as file:
+            for key in estado_jogo['var'].keys():
+                for i in range(len(estado_jogo['var'][key])): 
+                    file.write("{},{};".format(estado_jogo['var'][key][i][0], estado_jogo['var'][key][i][1]))
+                file.write("\n")
+            
+        reposiciona_jogo(estado_jogo)
+    
 def verifica_golos(estado_jogo):
     verifica_golo_jogador_vermelho(estado_jogo)
     verifica_golo_jogador_azul(estado_jogo)
@@ -300,15 +347,44 @@ def verifica_toque_jogador_azul(estado_jogo):
     Função responsável por verificar se o jogador tocou na bola. 
     Sempre que um jogador toca na bola, deverá mudar a direção desta.
     '''
-    pass
+    pos_x = (estado_jogo['bola']['objecto'].pos()[0] - estado_jogo['jogador_azul'].pos()[0])**2
+    pos_y = (estado_jogo['bola']['objecto'].pos()[1] - estado_jogo['jogador_azul'].pos()[1])**2
+    distancia = math.sqrt(pos_x + pos_y)
 
+    if (distancia <= RAIO_BOLA + RAIO_JOGADOR):
+        reta = (estado_jogo['bola']['objecto'].pos() - estado_jogo['jogador_azul'].pos())
+        reta_perpendicular = (-reta[0], reta[1])
+
+        #Angulo entre a direcao da velocidade da bola e a reta perpendicular a reta dos centros dos objectos
+        produto_escalar = reta_perpendicular[0]*estado_jogo['bola']['xx'] + reta_perpendicular[1]*estado_jogo['bola']['yy']
+        norma_1 = math.sqrt(reta_perpendicular[0]**2 + reta_perpendicular[1]**2)
+        norma_2 = math.sqrt(estado_jogo['bola']['xx']**2 + estado_jogo['bola']['yy']**2)
+        angulo = math.acos(produto_escalar / (norma_1 * norma_2)) * 180 / math.pi
+        angulo_bola = (180 - 2 * angulo) + estado_jogo['bola']['objecto'].heading()
+        estado_jogo['bola']['xx'] = math.cos(angulo_bola)/3
+        estado_jogo['bola']['yy'] = math.sin(angulo_bola)/3
 
 def verifica_toque_jogador_vermelho(estado_jogo):
     '''
     Função responsável por verificar se o jogador tocou na bola. 
     Sempre que um jogador toca na bola, deverá mudar a direção desta.
     '''
-    pass
+    pos_x = (estado_jogo['bola']['objecto'].pos()[0] - estado_jogo['jogador_vermelho'].pos()[0])**2
+    pos_y = (estado_jogo['bola']['objecto'].pos()[1] - estado_jogo['jogador_vermelho'].pos()[1])**2
+    distancia = math.sqrt(pos_x + pos_y)
+
+    if (distancia <= RAIO_BOLA + RAIO_JOGADOR):
+        reta = (estado_jogo['bola']['objecto'].pos() - estado_jogo['jogador_vermelho'].pos())
+        reta_perpendicular = (-reta[0], reta[1])
+
+        #Angulo entre a direcao da velocidade da bola e a reta perpendicular a reta dos centros dos objectos
+        produto_escalar = reta_perpendicular[0]*estado_jogo['bola']['xx'] + reta_perpendicular[1]*estado_jogo['bola']['yy']
+        norma_1 = math.sqrt(reta_perpendicular[0]**2 + reta_perpendicular[1]**2)
+        norma_2 = math.sqrt(estado_jogo['bola']['xx']**2 + estado_jogo['bola']['yy']**2)
+        angulo = math.acos(produto_escalar / (norma_1 * norma_2)) * 180 / math.pi
+        angulo_bola = (180 - 2 * angulo) + estado_jogo['bola']['objecto'].heading()
+        estado_jogo['bola']['xx'] = math.cos(angulo_bola)/3
+        estado_jogo['bola']['yy'] = math.sin(angulo_bola)/3
 
 
 def guarda_posicoes_para_var(estado_jogo):
