@@ -21,7 +21,7 @@ def le_replay(nome_ficheiro):
             lista_de_pares = list()
             for par in pares:
                 aux = par.split(",")
-                lista_de_pares.append([float(aux[0]), float(aux[1])])
+                lista_de_pares.append((float(aux[0]), float(aux[1])))
             replay[key] = lista_de_pares
     return replay
         
@@ -30,7 +30,7 @@ def le_replay(nome_ficheiro):
 def main():
     estado_jogo = foosball_alunos.init_state()
     foosball_alunos.setup(estado_jogo, False)
-    replay = le_replay('replay_golo_jv_1_ja_2.txt')
+    replay = le_replay('replay_golo_jv_0_ja_1.txt')
     for i in range(len(replay['bola'])):
         estado_jogo['janela'].update()
         estado_jogo['jogador_vermelho'].setpos(replay['jogador_vermelho'][i])

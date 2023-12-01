@@ -15,6 +15,7 @@ LADO_MENOR_AREA = 50
 RAIO_MEIO_CAMPO = LADO_MAIOR_AREA / 2
 START_POS_BALIZAS = ALTURA_JANELA / 4
 BOLA_START_POS = (5,5)
+VELOCIDADE_BOLA = 1/1.5
 
 
 # Funções responsáveis pelo movimento dos jogadores no ambiente. 
@@ -110,7 +111,7 @@ def criar_bola():
     bola.shape("circle")
     bola.shapesize(stretch_wid=RAIO_BOLA/15, stretch_len=RAIO_BOLA/15)
     angulo = random.randint(0, 359) * math.pi/180
-    return {'objecto': bola, 'xx': math.cos(angulo)/1.5, 'yy': math.sin(angulo)/1.5, 'pos': [None, None]}
+    return {'objecto': bola, 'xx': math.cos(angulo) * VELOCIDADE_BOLA, 'yy': math.sin(angulo) * VELOCIDADE_BOLA, 'pos': [None, None]}
     
 
 def cria_jogador(x_pos_inicial, y_pos_inicial, cor):
@@ -361,8 +362,8 @@ def verifica_toque_jogador_azul(estado_jogo):
         norma_2 = math.sqrt(estado_jogo['bola']['xx']**2 + estado_jogo['bola']['yy']**2)
         angulo = math.acos(produto_escalar / (norma_1 * norma_2)) * 180 / math.pi
         angulo_bola = (180 - 2 * angulo) + estado_jogo['bola']['objecto'].heading()
-        estado_jogo['bola']['xx'] = math.cos(angulo_bola)/3
-        estado_jogo['bola']['yy'] = math.sin(angulo_bola)/3
+        estado_jogo['bola']['xx'] = math.cos(angulo_bola) * VELOCIDADE_BOLA
+        estado_jogo['bola']['yy'] = math.sin(angulo_bola) * VELOCIDADE_BOLA
 
 def verifica_toque_jogador_vermelho(estado_jogo):
     '''
@@ -383,8 +384,8 @@ def verifica_toque_jogador_vermelho(estado_jogo):
         norma_2 = math.sqrt(estado_jogo['bola']['xx']**2 + estado_jogo['bola']['yy']**2)
         angulo = math.acos(produto_escalar / (norma_1 * norma_2)) * 180 / math.pi
         angulo_bola = (180 - 2 * angulo) + estado_jogo['bola']['objecto'].heading()
-        estado_jogo['bola']['xx'] = math.cos(angulo_bola)/3
-        estado_jogo['bola']['yy'] = math.sin(angulo_bola)/3
+        estado_jogo['bola']['xx'] = math.cos(angulo_bola) * VELOCIDADE_BOLA
+        estado_jogo['bola']['yy'] = math.sin(angulo_bola) * VELOCIDADE_BOLA
 
 
 def guarda_posicoes_para_var(estado_jogo):
